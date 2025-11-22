@@ -1,0 +1,98 @@
+* Question 4: Tower of hanoi
+Show that the solution to the towers of Hanoi given in Section 2.1 is optimal: for every 
+, it takes at least 2^n - 1 moves to move all the disks from one peg to another.
+
+** Answer
+Base case: Just move the disk to from 1 to 3.
+
+Inductive step:
+Move n-1 disks from 1 to 2 in 2^(n-1) - 1 moves.
+Move the bottom-most disk to from 1 to 3 in 1 move.
+Move the n-1 disks from 2 to 3 in 2^(n-1) - 1 moves.
+
+Total = 2^n - 2 + 1 moves = 2^n - 1 (QED)
+
+
+
+* Question 5: Tower of hanoi modified.
+
+Consider the variation on the towers of Hanoi problem in which you can only move a disk to an adjacent peg.
+In other words, you can move a disk from peg 1 to peg 2, from peg 2 to peg 1, from peg 2 to peg 3,
+or from peg 3 to peg 2, but not from peg 1 to peg 3 or from peg 3 to peg 1.
+
+Describe a recursive procedure for moving all the disks from peg 1 to page 3, and show that it requires 
+3^n - 1 moves. If you are ambitious, show that this is optimal, and that it goes through all the 
+valid positions.
+
+** Answer
+
+Base case is trivial.
+
+Inductive step:
+Move n-1 disks from 1 to 3 in 3^(n-1) - 1 moves
+Move the bottom-most disk from 1 to 2 in 1 move
+Move the n-1 disks from 3 to 1 in 3^(n-1) - 1 moves
+Move the bottom-most disk from 2 to 3 in 1 move
+Move the n-1 disks from 1 to 3 in 3^(n-1) - 1 moves.
+
+
+
+* Question 7: Complete induction with ordinary induction.
+
+Use the ordinary principle of induction to prove the principle of complete induction.
+
+
+** Answer
+What we need to prove is
+
+forall P : nat -> Prop,
+  P 0 ->
+    (forall k : nat,
+      and_until P k -> P (S k)) ->
+    forall n : nat,
+      P n.
+
+Suppose
+1. P 0
+2. (forall k : nat,
+      and_until P k -> P (S k))
+
+Induction on n
+- base case: by 1.
+- inductive step:
+  inductive hypothesis: forall n' < n. P n'
+  Applying inductive hypothesis to 2, we have
+  P n.
+Thus forall n. P n. and QED.
+
+  
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
