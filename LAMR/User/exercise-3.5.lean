@@ -1,4 +1,5 @@
 import Mathlib.Data.Nat.Factorial.Basic
+set_option linter.unusedTactic false
 
 
 def returnDivLessThanN (n: Nat) :=
@@ -51,7 +52,6 @@ def insertAllPositions (el: Nat): List Nat → List (List Nat)
   | x :: xs => (el :: x :: xs) :: (insertAllPositions el xs).map (fun zs => x :: zs)
 
 
-
 #eval insertAllPositions 5 [1,2,3,4]
 
 def permutations : List Nat -> List (List Nat)
@@ -62,7 +62,7 @@ def permutations : List Nat -> List (List Nat)
 
 #eval permutations ([1,2,3,4]) |> List.length
 
-theorem insert_all_lemma:
+lemma insert_all_lemma:
   (insertAllPositions x xs).length = xs.length.succ :=
 by
   induction xs with
@@ -71,7 +71,7 @@ by
   | cons x' xs'' ih =>
     simp[insertAllPositions, ih]
 
-theorem insert_all_lemma1:
+lemma insert_all_lemma1:
   ∀a ∈ insertAllPositions x xs, a.length = xs.length.succ :=
 by
   intros a
@@ -84,13 +84,7 @@ by
     simp[insertAllPositions]
     aesop
 
-
-theorem insert_all_positions_is_n_plus_one_times_itself :
-  List.length (insertAllPositions x ls) = ls.length.succ :=
-  by
-    simp[insert_all_lemma1, insert_all_lemma]
-
-theorem elem_perm:
+lemma permuatation_preserves_length:
   ∀ xs a, a ∈ permutations xs -> a.length = xs.length :=
 by
   intros xs
@@ -107,53 +101,35 @@ by
     #check insert_all_lemma1 a h_a_elem
     simp [insert_all_lemma1 a h_a_elem]
     simp[helpful]
--- #eval Nat.factorial 3
+
 theorem length_of_perms_l_is_factorial_l :
-  (permutations ls).length = ls.length.factorial := by
+  (permutations ls).length = ls.length.factorial :=
+  by
   induction ls with
   | nil => rfl
   | cons x xs ih =>
     rw [permutations, List.flatMap, List.length_flatten]
     rw[List.length_cons, Nat.factorial]
-    -- #print Function.comp
-    have h : ∀ res ∈ permutations xs,
-      (insertAllPositions x res).length = Nat.succ xs.length :=
-      by
-        intros  res h_res
-        simp[insert_all_lemma]
-        #check elem_perm xs res h_res
-        exact elem_perm xs res h_res
     rw [List.map_map]
-    #check Function.comp
-    #check List.map_congr_left h
-    have map_eq : List.map (List.length ∘ fun res => insertAllPositions x res) (permutations xs) =
-              List.map (fun _ => xs.length.succ) (permutations xs) := by
-                rw[List.map_inj_left]
-                intros a h1
-                have help : List.length a = List.length xs :=
-                  by
-                    exact elem_perm xs a h1
-                -- #check help h
-                rw[Function.comp]
-                rw[insert_all_positions_is_n_plus_one_times_itself]
-                simp [help]
-    rw[map_eq]
-    have aa : ∀ x ∈ permutations xs, Nat.succ (List.length x) = Nat.succ (List.length xs) :=
+    have map_eq :
+      List.map (List.length ∘ fun res => insertAllPositions x res) (permutations xs) =
+      List.map (fun _ => xs.length.succ) (permutations xs) :=
     by
-      intros y hy
-      simp[]
-      #check elem_perm xs y hy
-      exact elem_perm xs y hy
-    #check List.map_const'
+      rw[List.map_inj_left]
+      intros perm ly
+      rw[Function.comp]
+      #check insert_all_lemma
+      rw[insert_all_lemma, permuatation_preserves_length]
+      exact ly
+    rw[map_eq]
     rw[List.map_const']
-    #check (List.map_congr_left aa)
     rw[ih]
     generalize xs.length.factorial = n
     induction n with
     | zero => simp[]
-    | succ n' fds =>
+    | succ n' h_n' =>
       rw[List.replicate_succ]
       rw[List.sum_cons]
-      simp[fds]
+      simp[h_n']
       rw[Nat.mul_add, Nat.mul_one, Nat.add_comm]
       done
