@@ -166,9 +166,63 @@ partial def transpose_better (mat: List (List Nat)) : List (List Nat) :=
 #eval transpose_better ([[1,2,3], [4,5,6], [7,8,9]])
 
 
+partial def tower_of_hanoi (n: Nat) (startPeg: Nat) (endPeg:Nat) (auxPeg: Nat): List (ℕ × ℕ × ℕ) :=
+  if n == 0
+  then []
+  else
+    tower_of_hanoi (n - 1) startPeg auxPeg endPeg ++
+    [(n, startPeg, endPeg)] ++
+    tower_of_hanoi (n - 1) auxPeg endPeg startPeg
+
+#eval tower_of_hanoi 3 0 2 1
+
+partial def transition_tower_of_hanoi (logs: List (ℕ × ℕ × ℕ)) (state: Array (List Nat)) :=
+  match logs with
+  | [] => some state
+  | (pegNum, fromPeg, toPeg) :: logs' =>
+    let currState := state.get! fromPeg;
+    match currState with
+    | [] => none
+    | top::rest =>
+      if (top != pegNum)
+      then none
+      else
+        let state' := state.set! fromPeg rest;
+        let state'' := state'.set! toPeg (top :: (state.get! toPeg));
+        transition_tower_of_hanoi logs' state''
+
+def verify_tower_of_hanoi (tower_of_hanoi: Nat -> Nat -> Nat -> Nat -> List (Nat × Nat × Nat))
+                          (transition: List (Nat × Nat × Nat) -> Array (List Nat) -> Option (Array (List Nat)))
+                          (n: Nat) : Bool :=
+    let init_state := #[List.range (n + 1) |> List.tail!, [], []]
+    match (transition (tower_of_hanoi n 0 2 1) init_state) with
+    | none => false
+    | some _ => true
+
+
+#eval verify_tower_of_hanoi (tower_of_hanoi) (transition_tower_of_hanoi) 10
 
 
 
+inductive bin_tree_with_payload (α : Type) where
+| leaf: α -> (bin_tree_with_payload α)
+| node : α -> (bin_tree_with_payload α) -> (bin_tree_with_payload α) -> (bin_tree_with_payload α)
+deriving Repr, DecidableEq, Inhabited
 
-def tower_of_hanoi (n: Nat) :=
-  
+
+
+#eval show bin_tree_with_payload Nat from bin_tree_with_payload.leaf 3
+
+
+def sum_tree (t: bin_tree_with_payload Nat) : Nat :=
+  match t with
+  | bin_tree_with_payload.leaf a => a
+  | bin_tree_with_payload.node a l r =>
+    a + sum_tree l + sum_tree r
+
+
+#eval open bin_tree_with_payload in
+  sum_tree (leaf 3)
+
+#eval open bin_tree_with_payload in
+  sum_tree (node 4 (leaf 4) (leaf 5))
