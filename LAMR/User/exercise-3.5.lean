@@ -133,3 +133,42 @@ theorem length_of_perms_l_is_factorial_l :
       simp[h_n']
       rw[Nat.mul_add, Nat.mul_one, Nat.add_comm]
       done
+
+
+partial def transpose (mat : List (List Nat)): List (List Nat) :=
+  let aux (mat: List (List Nat)) :=
+    let x := List.map (fun row =>
+      match row with
+      | [] => ([], [])
+      | hd::tl => ([hd], tl)
+    ) mat;
+    let heads := List.map (fun pair => pair.fst) x
+    let rest := List.map (fun pair => pair.snd) x
+    (heads, rest)
+  let rec loop rest acc times :=
+    if times >= mat.head!.length
+    then acc
+    else
+      let (heads, rest) := aux (rest);
+      loop rest (acc ++ [List.flatten heads]) (times + 1)
+  loop mat [] 0
+
+
+partial def transpose_better (mat: List (List Nat)) : List (List Nat) :=
+  match mat with
+  | [] => []
+  | ([] :: _) => [[]]
+  | rows =>
+    (List.map List.head! rows) :: (List.map List.tail! rows)
+
+#eval transpose ([[], [], []])
+#eval transpose_better ([[], [], []])
+#eval transpose_better ([[1,2,3], [4,5,6], [7,8,9]])
+
+
+
+
+
+
+def tower_of_hanoi (n: Nat) :=
+  
